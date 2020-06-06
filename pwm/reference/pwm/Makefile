@@ -1,6 +1,7 @@
-KERNEL_DIR = /lib/modules/4.19.75-v7+/build
+KERNEL_VER := $(shell uname -r)
+KERNEL_DIR = /lib/modules/$(KERNEL_VER)/build
 
-obj-m := water_dev.o temp_dev.o dust_dev.o temp2_dev.o lcd_dev.o pwm_dev.o button_dev.o send_dev.o
+obj-m := pwm_dev.o
 
 PWD := $(shell pwd)
 

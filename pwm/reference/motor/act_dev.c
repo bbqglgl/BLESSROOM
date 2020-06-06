@@ -101,7 +101,7 @@ long act_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 {
    int kbuf = 0;
    int i = 0;
-   init_pwm();
+   init_act();
    switch(cmd) {
       
       case IOCTL_CMD_SET_DIRECTION:

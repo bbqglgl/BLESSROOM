@@ -1,4 +1,5 @@
-KERNEL_DIR = /lib/modules/4.19.75-v7+/build
+KERNEL_VER := $(shell uname -r)
+KERNEL_DIR = /lib/modules/$(KERNEL_VER)/build
 
 obj-m := act_dev.o
 
