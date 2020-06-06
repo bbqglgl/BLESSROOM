@@ -9,6 +9,7 @@
 #include <asm/mach/map.h>
 #include <asm/io.h>
 #include <asm/uaccess.h>
+#include <asm/delay.h>
 
 #define TT_MAJOR_NUMBER 505
 #define TT_DEV_NAME   "led_pwm1"
@@ -71,7 +72,7 @@ int init_pwm(void) {
    *clkctl = BCM_PASSWORD | (0x01 << 5); // stop PWM Clock
    msleep(10);//
 
-   int idiv = (int)(19200000.0f / 16000.0f); // Oscilloscope to 16kHz
+   int idiv = (int)(19200000.0f / 512000.0f);// Oscilloscope to 500Hz
    *clkdiv = BCM_PASSWORD | (idiv << 12); // integer part of divisior register
    *clkctl = BCM_PASSWORD | (0x11); //set source to oscilloscope & enable PWM CLK
 
@@ -90,34 +91,22 @@ long led_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
    int i = 0;
    init_pwm();
    switch(cmd) {
-      //Not only direction setting but PWM Setting. 
+      
       case IOCTL_CMD_SET_DIRECTION_90:
-         //Original Code of LED_IOCTL
+         
          copy_from_user(&kbuf, (const void*)arg, 4);
-         //*gpsel1 &= ~(1<<1);   
          *gpsel1 |= (1<<8);
-         //*gpsel1 &= ~(1<<1);
-         printk(KERN_ALERT "LED set direction out!!\n");
+         printk(KERN_ALERT "LED set direction!!\n");
          *pwmctl |= (1);      //PWEN       1
          *pwmctl &= ~(1<<1);    //MODE1      0
          *pwmctl |= (1<<7);    //MSEN1      MS   1
-         *pwmrng1 = 320;      //RANGE      320
-         *pwmdat1|= (1<<5);    //DAT      32   (1/10)
+         *pwmrng1 = 1024;      //RANGE      1024
+         *pwmdat1&= ~(1<<10); // clean
+         *pwmdat1|= (1<<kbuf);    //DAT      0 ~ 1024
+         
+         
+         
          return 1;
-         break;
-      case IOCTL_CMD_SET_DIRECTION_90_INVERSE:
-         //Original Code of LED_IOCTL
-         copy_from_user(&kbuf, (const void*)arg, 4);
-         //*gpsel1 &= ~(1<<1);   
-         *gpsel1 |= (1<<8);
-         //*gpsel1 &= ~(1<<1);
-         printk(KERN_ALERT "LED set direction out!!\n");
-         *pwmctl |= (1);      //PWEN       1
-         *pwmctl &= ~(1<<1);    //MODE1      0
-         *pwmctl |= (1<<7);    //MSEN1      MS   1
-         *pwmrng1 = 320;      //RANGE      320
-         *pwmdat1|= (1<<4);    //DAT      16   (1/10)
-         return 2;
          break;
    }
 
@@ -149,7 +138,7 @@ module_init(led_init);
 module_exit(led_exit);
 
 MODULE_LICENSE("GPL");
-MODULE_AUTHOR("Jiwoong");
+MODULE_AUTHOR("Yoo seong min");
 MODULE_DESCRIPTION("des");
 
    
