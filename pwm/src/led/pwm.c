@@ -58,16 +58,6 @@ int main()
 			printf("done %d cycle\n",loop);
 			loop += 1;
 		}
-		
-	
-				
-			
-		
-		
-		
-		
-       
-
    close(led);
    return 0;
 }

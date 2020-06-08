@@ -6,11 +6,6 @@
 #include <linux/slab.h>
 #include <linux/delay.h>
 
-#include <linux/kthread.h>
-#include <linux/signal.h>
-#include <linux/sched/signal.h>
-#include <linux/sched.h>
-
 #include <asm/mach/map.h>
 #include <asm/io.h>
 #include <asm/uaccess.h>
@@ -49,10 +44,6 @@ volatile unsigned int *pwmrng1;
 volatile unsigned int *pwmdat1;
 
 
-static struct task_struct* ts = NULL;
-unsigned int kbuf = 0;
-
-
 #define IOCTL_MAGIC_NUMBER 'p'
 #define IOCTL_CMD_SET_DIRECTION_90_INVERSE _IOWR(IOCTL_MAGIC_NUMBER, 0, int)
 #define IOCTL_CMD_SET_DIRECTION_90 _IOWR(IOCTL_MAGIC_NUMBER, 1, int)
@@ -60,14 +51,6 @@ int init_pwm(void);
 int led_open(struct inode *inode, struct file *filp){
    printk(KERN_ALERT "LED driver open!!\n");
    
-
-
-   return 0;
-}
-
-int init_pwm(void) {
-   int pwm_ctrl;
-
    gpio_base = ioremap(GPIO_BASE_ADDR, 0x60);
    gpsel1=(volatile unsigned int *)(gpio_base+GPFSEL1);
    
@@ -78,8 +61,14 @@ int init_pwm(void) {
    pwmctl = (volatile unsigned int*)(pwm+PWM_CTL);
    pwmrng1 = (volatile unsigned int*)(pwm+PWM_RNG1);
    pwmdat1 = (volatile unsigned int*)(pwm+PWM_DAT1);
+   
+   init_pwm();
 
-   pwm_ctrl = *pwmctl;
+   return 0;
+}
+
+int init_pwm(void) {
+   int pwm_ctrl = *pwmctl;
    *pwmctl = 0; // store PWM control and stop PWM
    msleep(10);//
    *clkctl = BCM_PASSWORD | (0x01 << 5); // stop PWM Clock
@@ -91,30 +80,24 @@ int init_pwm(void) {
 
    *pwmctl = pwm_ctrl; // restore PWM control and enable PWM
 
-   msleep(10);//
-
-   *gpsel1 |= (1<<8);
-   *pwmctl |= (1);      //PWEN       1
-   *pwmctl &= ~(1<<1);    //MODE1      0
-   *pwmctl |= (1<<7);    //MSEN1      MS   1
-   *pwmrng1 = (1<<10);      //RANGE      1024
-}
-
-static void led_routine(void)
-{
-   while(1)
-   {
-      *pwmdat1 = kbuf;    //DAT      0 ~ 1024
-      msleep(1);
-   }
+   
+         *gpsel1 |= (0b010<<24);
+         printk(KERN_ALERT "LED breath!!\n");
+         *pwmctl |= (1);      //PWEN       1
+         *pwmctl &= ~(1<<1);    //MODE1      0
+         *pwmctl |= (1<<7);    //MSEN1      MS   1
+         *pwmrng1 = (1<<10);      //RANGE      1024
 }
 
 int led_release(struct inode *inode, struct file *filp){
    printk(KERN_ALERT "LED driver close!!\n");
+   iounmap((void*)gpio_base);
+   iounmap((void*)pwm);
    return 0;
 }
 long led_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 {
+   unsigned int kbuf = 0;
    int i = 0;
    
     
@@ -123,7 +106,6 @@ long led_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
       case IOCTL_CMD_SET_DIRECTION_90:
          
          copy_from_user(&kbuf, (const void*)arg, 4);
-         printk(KERN_ALERT "LED breath!!\n");
          /*
          int a = kbuf; // addition using bitwise operation
          int b = kbuf + 1; 
@@ -139,6 +121,7 @@ long led_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
             x = txor;
          }
          * */
+         *pwmdat1 = kbuf;    //DAT      0 ~ 1024
          
          return 1;
          break;
@@ -158,24 +141,12 @@ int __init led_init(void){
    if(register_chrdev(TT_MAJOR_NUMBER, TT_DEV_NAME, &led_fops) < 0)
       printk(KERN_ALERT "LED driver initialization fail\n");
    else
-   {
-      init_pwm();
-		ts = kthread_run((void *)led_routine, NULL, "button_thread");
       printk(KERN_ALERT "LED driver initialization success\n");
-   }
-
    
    return 0;
 }
 
 void __exit led_exit(void){
-   iounmap((void*)gpio_base);
-   iounmap((void*)pwm);
-	if(ts)
-	{
-		send_sig(SIGUSR1, ts, 0);
-		kthread_stop(ts);
-	}
    unregister_chrdev(TT_MAJOR_NUMBER, TT_DEV_NAME);
    printk(KERN_ALERT "LED driver exit done\n");
 }
