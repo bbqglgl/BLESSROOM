@@ -16,10 +16,15 @@ int main(int argc, char* argv[])
 
     //when you want to run a server, set serverIP to NULL
     opt.serverIP = NULL;
-    //in this example, send sensor value data to main server.
+    //in this example, get sensor value data from client.
     opt.isMain = 1;
 
     rtnval = pthread_create(&pthread, NULL, net_process, (void *)&opt);
+    if(rtnval > 0)
+    {
+        printf("pthread error!\n");
+        return -1;
+    }
 
     while(1)
     {
