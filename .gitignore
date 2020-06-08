@@ -21,18 +21,6 @@
 *.gch
 *.pch
 
-# Libraries
-*.lib
-*.a
-*.la
-*.lo
-
-# Shared objects (inc. Windows DLLs)
-*.dll
-*.so
-*.so.*
-*.dylib
-
 # Executables
 *.exe
 *.out
@@ -72,3 +60,4 @@ dkms.conf
 .nfs*
 
 # End of https://www.toptal.com/developers/gitignore/api/c,linux
+__pycache__
