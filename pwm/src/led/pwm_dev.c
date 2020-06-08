@@ -56,10 +56,18 @@ unsigned int kbuf = 0;
 #define IOCTL_MAGIC_NUMBER 'p'
 #define IOCTL_CMD_SET_DIRECTION_90_INVERSE _IOWR(IOCTL_MAGIC_NUMBER, 0, int)
 #define IOCTL_CMD_SET_DIRECTION_90 _IOWR(IOCTL_MAGIC_NUMBER, 1, int)
-
+int init_pwm(void);
 int led_open(struct inode *inode, struct file *filp){
    printk(KERN_ALERT "LED driver open!!\n");
    
+
+
+   return 0;
+}
+
+int init_pwm(void) {
+   int pwm_ctrl;
+
    gpio_base = ioremap(GPIO_BASE_ADDR, 0x60);
    gpsel1=(volatile unsigned int *)(gpio_base+GPFSEL1);
    
@@ -71,11 +79,7 @@ int led_open(struct inode *inode, struct file *filp){
    pwmrng1 = (volatile unsigned int*)(pwm+PWM_RNG1);
    pwmdat1 = (volatile unsigned int*)(pwm+PWM_DAT1);
 
-   return 0;
-}
-
-int init_pwm(void) {
-   int pwm_ctrl = *pwmctl;
+   pwm_ctrl = *pwmctl;
    *pwmctl = 0; // store PWM control and stop PWM
    msleep(10);//
    *clkctl = BCM_PASSWORD | (0x01 << 5); // stop PWM Clock
@@ -107,8 +111,6 @@ static void led_routine(void)
 
 int led_release(struct inode *inode, struct file *filp){
    printk(KERN_ALERT "LED driver close!!\n");
-   iounmap((void*)gpio_base);
-   iounmap((void*)pwm);
    return 0;
 }
 long led_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
@@ -167,6 +169,8 @@ int __init led_init(void){
 }
 
 void __exit led_exit(void){
+   iounmap((void*)gpio_base);
+   iounmap((void*)pwm);
 	if(ts)
 	{
 		send_sig(SIGUSR1, ts, 0);

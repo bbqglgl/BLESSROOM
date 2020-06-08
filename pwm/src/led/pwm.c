@@ -49,10 +49,11 @@ int main()
 		int i = 0;
 		int loop = 0;
 		while(1){
+			i=0;
 			printf("%d cycle\n",loop);
 			for(; i<=(1<<10); i++){
 				ioctl(led, IOCTL_CMD_SET_DIRECTION_90, &i);
-				usleep(1); // 1kHz period is 1ms
+				usleep(1000); // 1kHz period is 1ms
 			}
 			printf("done %d cycle\n",loop);
 			loop += 1;
