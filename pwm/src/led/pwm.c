@@ -39,7 +39,6 @@ int main()
    mknod(TT_DEV_PATH_NAME, S_IFCHR|0666, pwm_dev);
    
   
-  
    led = open(TT_DEV_PATH_NAME, O_RDWR);
   
    if (led < 0) {
@@ -48,14 +47,15 @@ int main()
    }
 	
 		int i = 0;
-		
+		int loop = 0;
 		while(1){
-			printf("cycle\n");
-			for(; i<=10; ++i){
+			printf("%d cycle\n",loop);
+			for(; i<=(1<<10); i++){
 				ioctl(led, IOCTL_CMD_SET_DIRECTION_90, &i);
-				sleep(1);
+				usleep(1); // 1kHz period is 1ms
 			}
-			sleep(3);
+			printf("done %d cycle\n",loop);
+			loop += 1;
 		}
 		
 	

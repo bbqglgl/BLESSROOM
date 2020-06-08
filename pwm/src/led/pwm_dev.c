@@ -71,8 +71,8 @@ int init_pwm(void) {
    msleep(10);//
    *clkctl = BCM_PASSWORD | (0x01 << 5); // stop PWM Clock
    msleep(10);//
-
-   int idiv = (int)(19200000.0f / 512000.0f);// Oscilloscope to 500Hz
+   // idiv = 1920000 / range * frequency
+   int idiv = (int)(19200000.0f / 1024000.0f);// Oscilloscope to 1000Hz
    *clkdiv = BCM_PASSWORD | (idiv << 12); // integer part of divisior register
    *clkctl = BCM_PASSWORD | (0x11); //set source to oscilloscope & enable PWM CLK
 
@@ -87,24 +87,38 @@ int led_release(struct inode *inode, struct file *filp){
 }
 long led_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 {
-   int kbuf = 0;
+   unsigned int kbuf = 0;
    int i = 0;
    init_pwm();
+   
+    
    switch(cmd) {
       
       case IOCTL_CMD_SET_DIRECTION_90:
          
          copy_from_user(&kbuf, (const void*)arg, 4);
          *gpsel1 |= (1<<8);
-         printk(KERN_ALERT "LED set direction!!\n");
+         printk(KERN_ALERT "LED breath!!\n");
          *pwmctl |= (1);      //PWEN       1
          *pwmctl &= ~(1<<1);    //MODE1      0
          *pwmctl |= (1<<7);    //MSEN1      MS   1
-         *pwmrng1 = 1024;      //RANGE      1024
-         *pwmdat1&= ~(1<<10); // clean
-         *pwmdat1|= (1<<kbuf);    //DAT      0 ~ 1024
-         
-         
+         *pwmrng1 = (1<<10);      //RANGE      1024
+         /*
+         int a = kbuf; // addition using bitwise operation
+         int b = kbuf + 1; 
+         int x = a ^ b;
+         int an = a & b;
+         an = an << 1;
+         while ((an & x) != 0)
+         {
+            int txor = an^x;
+            int tand = an&x;
+            int uand = tand << 1;
+            an = uand;
+            x = txor;
+         }
+         * */
+         *pwmdat1|= kbuf;    //DAT      0 ~ 1024
          
          return 1;
          break;
