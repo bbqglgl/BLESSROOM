@@ -17,12 +17,17 @@ int main(int argc, char* argv[])
     //you have to set values in 'opt' for networking
     struct net_options opt;
 
-    //when you want to run a server, set serverIP to NULL
+    //when you want to run a client, set serverIP to IP string. (ex:"192.168.0.1")
     opt.serverIP = ip;
     //in this example, send sensor value data to main server.
     opt.isMain = 1;
 
     rtnval = pthread_create(&pthread, NULL, net_process, (void *)&opt);
+    if(rtnval > 0)
+    {
+        printf("pthread error!\n");
+        return -1;
+    }
 
     sensor_value.t = 0;
     while(1)
