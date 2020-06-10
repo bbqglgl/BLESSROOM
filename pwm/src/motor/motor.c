@@ -13,7 +13,7 @@
 
 #define ACT_DEV_PATH_NAME "/dev/act_dev"
 #define ACT_MAJOR_NUMBER 505
-#define ACT_MINOR_NUMBER 100
+#define ACT_MINOR_NUMBER 101
 #define ACT_DEV_NAME   "act_dev"
 
 #define GPIO_BASE_ADDR 0x3F200000

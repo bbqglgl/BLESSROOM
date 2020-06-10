@@ -12,6 +12,7 @@
 #include <asm/delay.h>
 
 #define TT_MAJOR_NUMBER 505
+#define TT_MINOR_NUMBER 101
 #define TT_DEV_NAME   "led_pwm1"
 
 #define GPIO_BASE_ADDR 0x3F200000
@@ -75,7 +76,7 @@ int init_pwm(void) {
    *clkctl = BCM_PASSWORD | (0x01 << 5); // stop PWM Clock
    msleep(10);//
    // idiv = 1920000 / range * frequency
-   int idiv = (int)(19200000.0f / 1024000.0f);// Oscilloscope to 1000Hz
+   int idiv = (int)(19200000.0f / 153600.0f);// Oscilloscope to 10240Hz
    *clkdiv = BCM_PASSWORD | (idiv << 12); // integer part of divisior register
    *clkctl = BCM_PASSWORD | (0x11); //set source to oscilloscope & enable PWM CLK
 
@@ -86,7 +87,7 @@ int init_pwm(void) {
          printk(KERN_ALERT "LED breath!!\n");
          *pwmctl |= (1);      //PWEN       1
          *pwmctl &= ~(1<<1);    //MODE1      0
-         *pwmctl |= (1<<7);    //MSEN1      MS   1
+         *pwmctl &= ~(1<<7);    //MSEN1      MS   1
          *pwmrng1 = (1<<10);      //RANGE      1024
 }
 

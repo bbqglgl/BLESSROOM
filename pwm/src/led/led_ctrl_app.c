@@ -51,7 +51,7 @@ int main()
 		
 		while(1){
 			// down
-			usleep(100);
+			usleep(1000);
 			printf("What brightness would you like to set? (0 ~ 1024) >> ");
 			scanf("%d",&input);
 			ioctl(led, IOCTL_CMD_READ_BRIGHTNESS, &current_brightness);
@@ -61,14 +61,14 @@ int main()
 			if(input < current_brightness){
 				for(i=current_brightness; i>=input; i--){
 					ioctl(led, IOCTL_CMD_SET_BRIGHTNESS, &i);
-					usleep(3000); // 1kHz period is 1ms
+					usleep(1000); // 1kHz period is 1ms
 				}
 			}
 			// up
 			else{
 				for(i=current_brightness; i<=input; i++){
 					ioctl(led, IOCTL_CMD_SET_BRIGHTNESS, &i);
-					usleep(3000); // 1kHz period is 1ms
+					usleep(1000); // 1kHz period is 1ms
 				}
 			}
 		}

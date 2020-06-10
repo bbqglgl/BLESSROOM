@@ -11,6 +11,7 @@
 #include <asm/uaccess.h>
 
 #define ACT_MAJOR_NUMBER 505
+#define ACT_MINOR_NUMBER 101
 #define ACT_DEV_NAME   "act_dev"
 
 #define GPIO_BASE_ADDR 0x3F200000
@@ -20,8 +21,8 @@
 #define PWM_BASE_ADDR 0x3F20C000
 //
 #define PWM_CTL 0x00
-#define PWM_RNG1 0x10
-#define PWM_DAT1 0x14
+#define PWM_RNG1 0x20
+#define PWM_DAT1 0x24
 
 // clock control
 #define CLK_BASE_ADDR 0x3F101000
@@ -49,6 +50,7 @@ volatile unsigned int *clkctl;
 #define IOCTL_CMD_SET_DIRECTION _IOWR(IOCTL_MAGIC_NUMBER_P, 0, int)
 #define IOCTL_CMD_CLEAR_DIRECTION _IOWR(IOCTL_MAGIC_NUMBER_P,1,int)
 #define IOCTL_FLAG_CHECK _IOWR(IOCTL_MAGIC_NUMBER_P,2,int)
+
 int init_act(void) {
    int pwm_ctrl = *pwmctl;
    *pwmctl = 0;                // store PWM control and stop PWM
@@ -56,7 +58,7 @@ int init_act(void) {
    *clkctl = BCM_PASSWORD | (0x01 << 5); // stop PWM Clock
    msleep(10);                  //sleep
    
-   int idiv = (int)(19200000.0f / 16000.0f); // Oscilloscope to 16kHz
+   int idiv = (int)(19200000.0f / 153600.0f); // Oscilloscope to 16kHz
    *clkdiv = BCM_PASSWORD | (idiv << 12); // integer part of divisior register
    *clkctl = BCM_PASSWORD | (0x11); //set source to oscilloscope & enable PWM CLK
 
@@ -77,15 +79,14 @@ int act_open(struct inode *inode, struct file *filp){
    pwmctl = (volatile unsigned int*)(pwm+PWM_CTL);
    pwmrng1 = (volatile unsigned int*)(pwm+PWM_RNG1);
    pwmdat1 = (volatile unsigned int*)(pwm+PWM_DAT1);
-   *gpsel1 &= ~(1<<26);   //Alternate function5
-   *gpsel1 |= (1<<25);
-   *gpsel1 &= ~(1<<24);
-   *pwmctl |= (1);            //PWEN       1
-   *pwmctl &= ~(1<<1);          //MODE1      0
-   *pwmctl |= (1<<7);          //MSEN1      1
-   *pwmrng1 = 320;            //RANGE      320
-   *gpsel1 |= (0<<15); // 15 pin(input)
+   *gpsel1 |= (0b100 << 9);
+   *pwmctl |= (1<<8);            //PWEN       1
+   *pwmctl &= ~(1<<9);          //MODE1      0
+   *pwmctl |= (1<<15);          //MSEN1      1
+   *pwmrng1 = 3072;            //RANGE      3072
+   *pwmdat1 = 0;
    
+   init_act();
    return 0;
 }
 
@@ -100,22 +101,27 @@ int act_release(struct inode *inode, struct file *filp){
 long act_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 {
    int kbuf = 0;
-   int i = 0;
-   init_act();
+ 
    switch(cmd) {
       
       case IOCTL_CMD_SET_DIRECTION:
          printk(KERN_ALERT "motor set\n");
-         *pwmdat1|= (1<<5);          //DAT         32   (1/10) 90degrees
-         printk(KERN_ALERT,"%x",*pwmdat1);
+         //*pwmdat1|= (1<<5);          //DAT         32   (1/10) 90degrees
+         *pwmdat1=384;
+         //*pwmdat1 = 32;
+         printk(KERN_ALERT "%d\n",*pwmdat1);
          break;
        
       case IOCTL_CMD_CLEAR_DIRECTION: 
          printk(KERN_ALERT "motor clear\n");
+         /*
          *pwmdat1&= ~(1<<5);
          *pwmdat1|= (1<<4);          
          *pwmdat1|= (1<<3);         //DAT         24   (1.5/20) 0degrees
-         printk(KERN_ALERT,"%x",*pwmdat1);
+         */
+         *pwmdat1 = 77;
+         
+         printk(KERN_ALERT "%d\n",*pwmdat1);
          break;
       case IOCTL_FLAG_CHECK:
          if(((*gplev1)&( 1 << 15)) == 0) return 10;
@@ -150,5 +156,5 @@ module_init(act_init);
 module_exit(act_exit);
 
 MODULE_LICENSE("GPL");
-MODULE_AUTHOR("wooseok");
+MODULE_AUTHOR("You seong min");
 MODULE_DESCRIPTION("des");
