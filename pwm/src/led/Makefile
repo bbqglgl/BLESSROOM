@@ -1,7 +1,7 @@
 KERNEL_VER := $(shell uname -r)
 KERNEL_DIR = /lib/modules/$(KERNEL_VER)/build
 
-obj-m := pwm_dev.o
+obj-m := led_ctrl_dev.o
 
 PWD := $(shell pwd)
 

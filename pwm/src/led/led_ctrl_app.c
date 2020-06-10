@@ -24,9 +24,9 @@
 #define GPLEV0 0x34
 #define GPCLR0 0x28
 
-#define IOCTL_MAGIC_NUMBER_P 'p'
-#define IOCTL_CMD_SET_DIRECTION_90_INVERSE _IOWR(IOCTL_MAGIC_NUMBER_P, 0, int)
-#define IOCTL_CMD_SET_DIRECTION_90 _IOWR(IOCTL_MAGIC_NUMBER_P, 1, int)
+#define IOCTL_MAGIC_NUMBER	'p'
+#define IOCTL_CMD_SET_BRIGHTNESS _IOWR(IOCTL_MAGIC_NUMBER, 0, int)
+#define IOCTL_CMD_READ_BRIGHTNESS _IOWR(IOCTL_MAGIC_NUMBER, 1, int)
 
 int main()
 {
@@ -34,7 +34,6 @@ int main()
    dev_t pwm_dev;
    int p, led;
   
-
    pwm_dev =makedev(TT_MAJOR_NUMBER, TT_MINOR_NUMBER);
    mknod(TT_DEV_PATH_NAME, S_IFCHR|0666, pwm_dev);
    
@@ -46,17 +45,32 @@ int main()
 	   return -1;
    }
 	
+		int current_brightness = 0;
+		int input = 0;
 		int i = 0;
-		int loop = 0;
+		
 		while(1){
-			i=0;
-			printf("%d cycle\n",loop);
-			for(; i<=(1<<10); i++){
-				ioctl(led, IOCTL_CMD_SET_DIRECTION_90, &i);
-				usleep(1000); // 1kHz period is 1ms
+			// down
+			usleep(100);
+			printf("What brightness would you like to set? (0 ~ 1024) >> ");
+			scanf("%d",&input);
+			ioctl(led, IOCTL_CMD_READ_BRIGHTNESS, &current_brightness);
+			printf("\ncurrent brightness is %d\n",current_brightness);
+			printf("settring brightness %d...\n",input);
+
+			if(input < current_brightness){
+				for(i=current_brightness; i>=input; i--){
+					ioctl(led, IOCTL_CMD_SET_BRIGHTNESS, &i);
+					usleep(3000); // 1kHz period is 1ms
+				}
 			}
-			printf("done %d cycle\n",loop);
-			loop += 1;
+			// up
+			else{
+				for(i=current_brightness; i<=input; i++){
+					ioctl(led, IOCTL_CMD_SET_BRIGHTNESS, &i);
+					usleep(3000); // 1kHz period is 1ms
+				}
+			}
 		}
    close(led);
    return 0;

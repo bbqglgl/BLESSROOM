@@ -43,11 +43,12 @@ volatile unsigned int *pwmctl;
 volatile unsigned int *pwmrng1;
 volatile unsigned int *pwmdat1;
 
-
 #define IOCTL_MAGIC_NUMBER 'p'
-#define IOCTL_CMD_SET_DIRECTION_90_INVERSE _IOWR(IOCTL_MAGIC_NUMBER, 0, int)
-#define IOCTL_CMD_SET_DIRECTION_90 _IOWR(IOCTL_MAGIC_NUMBER, 1, int)
+#define IOCTL_CMD_SET_BRIGHTNESS _IOWR(IOCTL_MAGIC_NUMBER, 0, int)
+#define IOCTL_CMD_READ_BRIGHTNESS _IOWR(IOCTL_MAGIC_NUMBER, 1, int)
+
 int init_pwm(void);
+
 int led_open(struct inode *inode, struct file *filp){
    printk(KERN_ALERT "LED driver open!!\n");
    
@@ -98,32 +99,20 @@ int led_release(struct inode *inode, struct file *filp){
 long led_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 {
    unsigned int kbuf = 0;
-   int i = 0;
-   
     
    switch(cmd) {
       
-      case IOCTL_CMD_SET_DIRECTION_90:
-         
+      case IOCTL_CMD_SET_BRIGHTNESS:
          copy_from_user(&kbuf, (const void*)arg, 4);
-         /*
-         int a = kbuf; // addition using bitwise operation
-         int b = kbuf + 1; 
-         int x = a ^ b;
-         int an = a & b;
-         an = an << 1;
-         while ((an & x) != 0)
-         {
-            int txor = an^x;
-            int tand = an&x;
-            int uand = tand << 1;
-            an = uand;
-            x = txor;
-         }
-         * */
-         *pwmdat1 = kbuf;    //DAT      0 ~ 1024
-         
+         *pwmdat1 = kbuf;    //DAT  0 ~ 1024
          return 1;
+         break;
+
+      case IOCTL_CMD_READ_BRIGHTNESS:
+         kbuf = 0;
+         kbuf = *pwmdat1;
+         copy_to_user((const void*)arg,&kbuf,4);
+         return 2;
          break;
    }
 
