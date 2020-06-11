@@ -12,7 +12,6 @@
 
 #define TEMP_MAJOR_NUMBER 503
 #define TEMP_DEV_NAME   "temp_dev"
-#define MAXTIMINGS    85
 
 #define GPIO_BASE_ADDR 0x3F200000
 #define GPFSEL1 0X04
@@ -51,15 +50,15 @@ int TEMP_release(struct inode *inode, struct file *filp){
 
 long TEMP_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 {
-	int laststate =1;
-    int counter        = 0;
-    int j = 0,i;
+	
+    int counter = 0;
+    int j = 0;
+    int i;
     int temp=0;
 	int flag=0;
+	int data = 0;
 	dht11_dat[0] = dht11_dat[1] = dht11_dat[2] = dht11_dat[3] = dht11_dat[4] = 0;
-	int kbuf[2];
-	int x=0;
-	int t=0;
+	
 	/*
 	Counts the number of events and responses sent combined. 
 	Counts from 0 to 255 then from 0 again.
@@ -67,13 +66,13 @@ long TEMP_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 	switch(cmd) {
 		case TEMP_SET:
 			*gpsel1 |= (1<<21);	
-			*gpclr1 |= (1<<17);	//digitalWrite(DHpin, LOW); // bus down, send start signal
+			*gpclr1 |= (1<<17);	// bus down, send start signal using 17 pin
 			mdelay(18); 		// delay greater than 18ms, so DHT11 start signal can be detected
-			*gpset1 |= (1<<17);	//digitalWrite(DHpin, HIGH);
+			*gpset1 |= (1<<17);	// bus up, sned start signale using 17 pin
 			udelay(40); 		// Wait for DHT11 response
-			*gpsel1 &= ~(1<<21);
+			*gpsel1 &= ~(1<<21); // clear for reading data
 			while(counter<255){ // 8bit temperature
-				if(((*gplev0) &( 1 << 17)))
+				if(((*gplev0) &( 1 << 17))) // detect  voltage
 					break;
 				udelay(1);
 				counter++;
@@ -82,10 +81,10 @@ long TEMP_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 				flag=1;
 				return;
 			}
-			counter=0;
-			udelay(110);
-			for ( i= 0; i < 40; i++ )
-			{
+			counter=0; // next 8 bit check
+			udelay(110); // term for next
+			for ( i= 0; i < 40; i++ ) // all data construct 40 bit 
+			{ // 8bit * 5
 				counter = 0;
 				while ( counter<255 )
 				{
@@ -109,17 +108,39 @@ long TEMP_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 						return;
 					}
 				}
-				j=i/8;
-				//printk(KERN_ALERT "na o gin ha ni : ");
-				dht11_dat[j]=dht11_dat[j] << 1;
-				if ( counter > 25 /*16*/ )	//"1"
+				j=i/8; // set data location in j
+				// write data 
+				dht11_dat[j] <<= 1;
+				/*
+				 * in datasheet
+				 * 26 ~ 28us means data '0'
+				 * counter less than 26 value
+				 * 25 is Proper value...
+				 * because program delay  
+				 * */
+				if ( counter > 25)
 					dht11_dat[j] =dht11_dat[j]+ 1;
 					
 			}
-			//sprintf("%s%s",kbuf,dht11_dat[0],dht11_dat[2]);
-			t=(dht11_dat[0]<<8)|(dht11_dat[2]);
-			printk(KERN_ALERT "t=%d\n",t);
-			copy_to_user((const void*)arg, &t, 4); 
+			/*
+			 * data 
+			 * 1. humi high data (8 bit)
+			 * 2. humi low data(8 bit)
+			 * 3. temp high data(8 bit)
+			 * 4. temp low data(8 bit)
+			 * 
+			 * The exact values are introduced below,
+			 * In the kernel, the division operation causes problems
+             * Use approximate values.
+             * 
+			 * Humidity Value
+			 * ((float)((integral RH data << 8) + 8bit decimal RH data)/(float)10.0)
+			 * Temperature Value 
+			 * ((float)((8bit integral T data << 8) + 8bit decimal T data)/(float)10.0)
+			 */
+			 
+			data=(dht11_dat[0]<<8)|(dht11_dat[2]);
+			copy_to_user((const void*)arg, &data, 4); 
 			printk(KERN_ALERT "Humidity = %d.%d %% Temperature = %d.%d \n",
 					dht11_dat[0], dht11_dat[1], dht11_dat[2], dht11_dat[3]);
 			// parity bit check
