@@ -12,7 +12,7 @@
 #include <sys/sysmacros.h>
 
 #define TT_DEV_PATH_NAME "/dev/tt_dev"
-#define TT_MAJOR_NUMBER 505
+#define TT_MAJOR_NUMBER 504
 #define TT_MINOR_NUMBER 100
 #define TT_DEV_NAME   "led_pwm1"
 

@@ -47,9 +47,8 @@ volatile unsigned int *clkdiv;
 volatile unsigned int *clkctl;
 
 #define IOCTL_MAGIC_NUMBER_P 's'
-#define IOCTL_CMD_SET_DIRECTION _IOWR(IOCTL_MAGIC_NUMBER_P, 0, int)
-#define IOCTL_CMD_CLEAR_DIRECTION _IOWR(IOCTL_MAGIC_NUMBER_P,1,int)
-#define IOCTL_FLAG_CHECK _IOWR(IOCTL_MAGIC_NUMBER_P,2,int)
+#define IOCTL_CMD_SET_ANGLE _IOWR(IOCTL_MAGIC_NUMBER_P, 0, int)
+#define IOCTL_CMD_READ_ANGLE _IOWR(IOCTL_MAGIC_NUMBER_P,1,int)
 
 int init_act(void) {
    int pwm_ctrl = *pwmctl;
@@ -100,32 +99,25 @@ int act_release(struct inode *inode, struct file *filp){
 
 long act_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 {
-   int kbuf = 0;
+   unsigned int kbuf = 0;
  
    switch(cmd) {
-      
-      case IOCTL_CMD_SET_DIRECTION:
-         printk(KERN_ALERT "motor set\n");
-         //*pwmdat1|= (1<<5);          //DAT         32   (1/10) 90degrees
-         *pwmdat1=384;
-         //*pwmdat1 = 32;
-         printk(KERN_ALERT "%d\n",*pwmdat1);
+      // motor pulse width 0.5ms(-90) ~ 2.5ms(90)
+      // 3072 / 20ms : 153.6 => 1
+      // (153.6 / 2 = 77) ~ (153.6 * 2.5 = 384) 
+      // 230 : 0degree
+      case IOCTL_CMD_SET_ANGLE:
+         printk(KERN_ALERT "motor angle set\n");
+         copy_from_user(&kbuf, (const void*)arg, 4);
+         *pwmdat1 = kbuf;    //DAT  77 ~ 384
          break;
        
-      case IOCTL_CMD_CLEAR_DIRECTION: 
-         printk(KERN_ALERT "motor clear\n");
-         /*
-         *pwmdat1&= ~(1<<5);
-         *pwmdat1|= (1<<4);          
-         *pwmdat1|= (1<<3);         //DAT         24   (1.5/20) 0degrees
-         */
-         *pwmdat1 = 77;
-         
-         printk(KERN_ALERT "%d\n",*pwmdat1);
+      case IOCTL_CMD_READ_ANGLE: 
+         printk(KERN_ALERT "motor angle read\n");
+         kbuf = 0;
+         kbuf = *pwmdat1;
+         copy_to_user((const void*)arg,&kbuf,4);
          break;
-      case IOCTL_FLAG_CHECK:
-         if(((*gplev1)&( 1 << 15)) == 0) return 10;
-         else return 11;
    }
 
    return 0;

@@ -38,38 +38,46 @@
 #define PWM_DAT1 0x14
 
 #define IOCTL_MAGIC_NUMBER_P 's'
-#define IOCTL_CMD_SET_DIRECTION _IOWR(IOCTL_MAGIC_NUMBER_P, 0, int)
-#define IOCTL_CMD_CLEAR_DIRECTION _IOWR(IOCTL_MAGIC_NUMBER_P,1,int)
-#define IOCTL_FLAG_CHECK _IOWR(IOCTL_MAGIC_NUMBER_P,2,int)
-int fd;
+#define IOCTL_CMD_SET_ANGLE _IOWR(IOCTL_MAGIC_NUMBER_P, 0, int)
+#define IOCTL_CMD_READ_ANGLE _IOWR(IOCTL_MAGIC_NUMBER_P,1,int)
+
+
 
 int main(void)
 {
    dev_t act_dev;
-  
-   int p=0;
-   int x=0;
+   int motor;
    
    act_dev=makedev(ACT_MAJOR_NUMBER,ACT_MINOR_NUMBER);
    mknod(ACT_DEV_PATH_NAME, S_IFCHR|0666, act_dev);
   
-   fd=open(ACT_DEV_PATH_NAME, O_RDWR);
+   motor=open(ACT_DEV_PATH_NAME, O_RDWR);
    
-   if(fd<0){
-      printf("fail to open chat\n");
+   if(motor<0){
+      printf("fail to open motor\n");
       return -1;
    }
-
+   
+   int input = 0;
+   int angle = 0;
+   int dev_value = 0;
+   printf("start program\n");
    while(1)
    {
-       x = ioctl(fd, IOCTL_CMD_SET_DIRECTION, &p);
-       sleep(5);   
-       x=ioctl(fd,IOCTL_CMD_CLEAR_DIRECTION,&p);
-       sleep(5);  
+      
+      angle=ioctl(motor,IOCTL_CMD_READ_ANGLE,&dev_value);
+      usleep(1000);
+      printf("current angle setting value : %d\n",angle);
+      printf("if input = 77 then set -90 degree\nif input = 230 then set 0 degree\n \
+      if input = 384 then set 90 degree");
+      printf("please type angle (77 ~ 384) >>> ");
+      scanf("%d", &input);
+      ioctl(motor, IOCTL_CMD_SET_ANGLE, &input);
+      usleep(1000);
    }
    
 
-   close(fd);
+   close(motor);
 
    
    return 0;

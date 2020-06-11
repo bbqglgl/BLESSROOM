@@ -11,8 +11,8 @@
 #include <asm/uaccess.h>
 #include <asm/delay.h>
 
-#define TT_MAJOR_NUMBER 505
-#define TT_MINOR_NUMBER 101
+#define TT_MAJOR_NUMBER 504
+#define TT_MINOR_NUMBER 100
 #define TT_DEV_NAME   "led_pwm1"
 
 #define GPIO_BASE_ADDR 0x3F200000
