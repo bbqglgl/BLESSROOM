@@ -10,7 +10,7 @@
 #include <asm/io.h>
 #include <asm/uaccess.h>
 
-#define TEMP_MAJOR_NUMBER 503
+#define TEMP_MAJOR_NUMBER 504
 #define TEMP_DEV_NAME   "temp_dev"
 
 #define GPIO_BASE_ADDR 0x3F200000

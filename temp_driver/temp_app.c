@@ -13,8 +13,8 @@
 
 
 #define TEMP_DEV_PATH_NAME "/dev/temp_dev"
-#define TEMP_MAJOR_NUMBER 503
-#define TEMP_MINOR_NUMBER 100
+#define TEMP_MAJOR_NUMBER 504
+#define TEMP_MINOR_NUMBER 103
 #define TEMP_DEV_NAME   "temp_dev"
 
 #define GPIO_BASE_ADDR 0x3F200000

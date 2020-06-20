@@ -1,6 +1,6 @@
 KERNEL_DIR = /lib/modules/4.19.97-v7+/build
 
-obj-m := light_dev.o sound_dev.o gas_dev.o
+obj-m := light_dev.o sound_dev.o gas_dev.o temp_dev.o
 
 PWD := $(shell pwd)
 
