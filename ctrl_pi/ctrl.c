@@ -126,14 +126,10 @@ int main(void)
 	/***********************************************************************************************************************
         * sound control 50ms => 1s extend
 	* original
-	* |  1ms  | : duty cycle (77/3072) = 2.5%
-	* |                 50ms                       | duty cycle (3072/3072) = 100 %
-	* 2.5 % is 20 times longer on the time base.
-	* now, 1s convert to range is 3072
-	* what is the duty cycle 0.5ms ??
-	* |  1ms  | : duty cycle (77 / 3072) * 20 => 2.5 % * 20 = 25%
-	* |                                              1s                                                       | :   3072 = 100%
-	
+	* 77 : 3072 = x ms : 20 ms
+	* input = 77
+	* x = (input * 20) / 3072
+	* x 는 시간
 	**************************************************************************************************************************/ 
       duty_cycle = control_value.sound * 20 / 3072;
       usleep(1000);
