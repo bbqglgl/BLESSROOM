@@ -1,83 +1,100 @@
+#define PY_SSIZE_T_CLEAN
+
 #include <stdio.h>
+#include <unistd.h>
 #include <stdlib.h>
-#include <string.h>
-#include<sys/socket.h>
-#include<netinet/in.h>
-#include<arpa/inet.h>
+#include <pthread.h>
+#include <Python.h>
+#include "../includes/net_packet.h"
 
-#define NET_BUFSIZE 512
-
-int Socket_Init()
+void get_py_info(char* py_path, char* py_func)
 {
-	int fd;
-	struct sockaddr_in address;
+	PyObject *pName, *pModule, *pFunc;
+    PyObject *pArgs, *pValue;
+    int i;
 
-    char buf[NET_BUFSIZE];
+    Py_Initialize();
+    pName = PyUnicode_DecodeFSDefault(py_path);
+    /* Error checking of pName left out */
 
-    fd = socket(AF_INET, SOCK_DGRAM, 0);
+    pModule = PyImport_Import(pName);
+    Py_DECREF(pName);
 
-    if (fd == 0)
-    {
-        printf("socket failed.\n");
-        return -1;
+    if (pModule != NULL) {
+        pFunc = PyObject_GetAttrString(pModule, py_func);
+        /* pFunc is a new reference */
+
+        if (pFunc && PyCallable_Check(pFunc)) {
+            pArgs = PyTuple_New(argc - 3);
+            for (i = 0; i < argc - 3; ++i) {
+                pValue = PyLong_FromLong(atoi(argv[i + 3]));
+                if (!pValue) {
+                    Py_DECREF(pArgs);
+                    Py_DECREF(pModule);
+                    fprintf(stderr, "Cannot convert argument\n");
+                    return 1;
+                }
+                /* pValue reference stolen here: */
+                PyTuple_SetItem(pArgs, i, pValue);
+            }
+            pValue = PyObject_CallObject(pFunc, pArgs);
+            Py_DECREF(pArgs);
+            if (pValue != NULL) {
+                printf("Result of call: %ld\n", PyLong_AsLong(pValue));
+                Py_DECREF(pValue);
+            }
+            else {
+                Py_DECREF(pFunc);
+                Py_DECREF(pModule);
+                PyErr_Print();
+                fprintf(stderr,"Call failed\n");
+                return 1;
+            }
+        }
+        else {
+            if (PyErr_Occurred())
+                PyErr_Print();
+            fprintf(stderr, "Cannot find function \"%s\"\n", argv[2]);
+        }
+        Py_XDECREF(pFunc);
+        Py_DECREF(pModule);
     }
-
-    memset(&address, 0, sizeof(address));
-
-    address.sin_family = AF_INET;
-    address.sin_addr.s_addr = INADDR_ANY;
-    address.sin_port = htons(9000);
-
-    if (bind(fd, (struct sockaddr*)&address, sizeof(address)) < 0)
-    {
-        printf("bind failed.\n");
-        return -2;
+    else {
+        PyErr_Print();
+        fprintf(stderr, "Failed to load \"%s\"\n", argv[1]);
+        return 1;
     }
-    return fd;
+    if (Py_FinalizeEx() < 0) {
+        return 120;
+    }
+    return 0;
 }
 
 int main(int argc, char* argv[])
 {
-	int retval;
-	// 데이터 통신에 사용할 변수
-	struct sockaddr_in clientaddr;
-	int addrlen;
-	char buf[NET_BUFSIZE + 1];
-	int t;
+    pthread_t pthread;
+    //return value
+    int rtnval;
+    //you have to set values in 'opt' for networking
+    struct net_options opt;
+    //when you want to run a server, set serverIP to NULL
+    opt.serverIP = NULL;
+    //in this example, get sensor value data from client.
+    opt.isMain = 1;
 
-	int sock = Socket_Init();
-	if (sock < 0)
-	{
-		printf("Init error\n");
-		return 0;
-	}
 
-	// 클라이언트와 데이터 통신
-	while (1) {
-		// 데이터 받기
-		addrlen = sizeof(clientaddr);
-		retval = recvfrom(sock, buf, NET_BUFSIZE, 0,
-			(struct sockaddr*)&clientaddr, &addrlen);
-		if (retval < 0) {
-			continue;
-		}
 
-		// 받은 데이터 출력
-		buf[retval] = '\0';
-		printf("[UDP/%s:%d] %s\n", inet_ntoa(clientaddr.sin_addr),
-			ntohs(clientaddr.sin_port), buf);
+    rtnval = pthread_create(&pthread, NULL, net_process, (void *)&opt);
+    if(rtnval > 0)
+    {
+        printf("pthread error!\n");
+        return -1;
+    }
 
-		// 데이터 보내기
-		retval = sendto(sock, buf, retval, 0,
-			(struct sockaddr*)&clientaddr, sizeof(clientaddr));
-		if (retval < 0) {
-			printf("send() error\n");
-			continue;
-		}
-	}
-
-	// closesocket()
-	close(sock);
-
-	return 0;
+    while(1)
+    {
+        printf("led : %d\n",sensor_value.gas);
+        sleep(1);
+    }
+    return 0;
 }

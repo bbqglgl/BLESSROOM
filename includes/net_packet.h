@@ -23,8 +23,9 @@ struct ssensor_value
 
 struct scontrol_value
 {
-    int t;
-    float tt;
+    int led; //0~1024
+    int pwm1; //77~384
+    int pwm2; //77~384
 };
 
 extern struct ssensor_value sensor_value;
