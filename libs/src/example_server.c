@@ -17,7 +17,7 @@ int main(int argc, char* argv[])
     //when you want to run a server, set serverIP to NULL
     opt.serverIP = NULL;
     //in this example, get sensor value data from client.
-    opt.isMain = 1;
+    opt.isMain = 0;
 
     rtnval = pthread_create(&pthread, NULL, net_process, (void *)&opt);
     if(rtnval > 0)
@@ -28,7 +28,9 @@ int main(int argc, char* argv[])
 
     while(1)
     {
-        printf("data : %d\n",sensor_value.t);
+        printf("led : %d\n",control_value.led);
+        printf("pwm1 : %d\n",control_value.pwm1);
+        printf("pwm2 : %d\n",control_value.pwm2);
         sleep(1);
     }
     return 0;
