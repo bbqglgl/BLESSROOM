@@ -53,8 +53,7 @@ x = 384
     + 나눔 제수를 clock idiv register에 넣어야 한다. 
   - [clock div 구하기 공식](https://books.google.co.kr/books?id=1FUnCgAAQBAJ&pg=PA423&lpg=PA423&dq=%EB%9D%BC%EC%A6%88%EB%B2%A0%EB%A6%AC%ED%8C%8C%EC%9D%B4+clock+div&source=bl&ots=Y2gDh7iJ2L&sig=ACfU3U3Fqgs8gotAcHQ9q-fzOlHvPuJCng&hl=ko&sa=X&ved=2ahUKEwifivbU4OzpAhXRQN4KHe6kBfIQ6AEwCHoECAkQAQ#v=onepage&q=%EB%9D%BC%EC%A6%88%EB%B2%A0%EB%A6%AC%ED%8C%8C%EC%9D%B4%20clock%20div&f=false)   
  
-+ 클럭 변경을 위해서는 BCMPASSWORD에 접근해야한다.
-  - bcm_password
++ 클럭 변경을 위해서는 BCMPASSWORD를 이용해야한다.
   - [BCM PASSWORD](https://www.scribd.com/doc/101830961/GPIO-Pads-Control2)
   - "중요한"주변 장치 레지스터 (클록 관리, 전원 관리, 리셋 / 워치 독 제어)에 대한 
   - 모든 쓰기는 0x5A로 처음 8 비트에 쓰거나 쓰기는 무시됩니다.
