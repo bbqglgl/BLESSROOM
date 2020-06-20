@@ -72,6 +72,17 @@ long TEMP_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 			udelay(40); 		// Wait for DHT11 response
 			*gpsel1 &= ~(1<<21); // clear for reading data
 			while(counter<255){ // 8bit temperature
+				/*
+				* connection setting
+				* 80us low signal
+				* 80us high signal
+				* and then transfer start
+				*
+				* according to experience result
+				* If normal, the count cannot exceed 255us in any case.
+				* it means low signal repeat until 255us
+				* if normal, signal must have rising edge
+				*/
 				if(((*gplev0) &( 1 << 17))) // detect  voltage
 					break;
 				udelay(1);
@@ -85,11 +96,17 @@ long TEMP_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 			udelay(110); // term for next
 			for ( i= 0; i < 40; i++ ) // all data construct 40 bit 
 			{ // 8bit * 5
+				/*
+				* communication 
+				* if 1 bit transfer to pi, then 50us low signal until ,
+				* and then rising edge until 26 ~ 28us then data is 0
+				* or until 70us then data is 1
+				*/
 				counter = 0;
 				while ( counter<255 )
-				{
-					if(((*gplev0) &( 1 << 17)))
-						break;
+				{ // wait rising dege
+					if(((*gplev0) &( 1 << 17))) // if rising edge start
+						break; // then break loop
 					udelay(1);
 					counter++;
 				}
@@ -109,8 +126,8 @@ long TEMP_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 					}
 				}
 				j=i/8; // set data location in j
-				// write data 
-				dht11_dat[j] <<= 1;
+				// write '0' 
+				dht11_dat[j] <<= 1; // initialize 0 then, dht11_dat[j] <<= 1 then, dht_dat[j] = 0
 				/*
 				 * in datasheet
 				 * 26 ~ 28us means data '0'
@@ -118,6 +135,11 @@ long TEMP_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 				 * 25 is Proper value...
 				 * because program delay  
 				 * */
+				/*
+				*
+				*
+				*
+				*/
 				if ( counter > 25)
 					dht11_dat[j] =dht11_dat[j]+ 1;
 					
