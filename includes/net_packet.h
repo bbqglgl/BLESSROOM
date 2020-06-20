@@ -24,8 +24,8 @@ struct ssensor_value
 struct scontrol_value
 {
     int led; //0~1024
-    int pwm1; //77~384
-    int pwm2; //77~384
+    int window; //77~384
+    int sound; //77~384
 };
 
 extern struct ssensor_value sensor_value;

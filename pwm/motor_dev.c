@@ -10,9 +10,9 @@
 #include <asm/io.h>
 #include <asm/uaccess.h>
 
-#define ACT_MAJOR_NUMBER 505
-#define ACT_MINOR_NUMBER 101
-#define ACT_DEV_NAME   "act_dev"
+#define MOTOR_MAJOR_NUMBER 505
+#define MOTOR_MINOR_NUMBER 101
+#define MOTOR_DEV_NAME   "motor_dev"
 
 #define GPIO_BASE_ADDR 0x3F200000
 #define GPFSEL1 0X04
@@ -50,7 +50,7 @@ volatile unsigned int *clkctl;
 #define IOCTL_CMD_SET_ANGLE _IOWR(IOCTL_MAGIC_NUMBER_P, 0, int)
 #define IOCTL_CMD_READ_ANGLE _IOWR(IOCTL_MAGIC_NUMBER_P,1,int)
 
-int init_act(void) {
+int init_motor(void) {
    int pwm_ctrl = *pwmctl;
    *pwmctl = 0;                // store PWM control and stop PWM
    msleep(10);                  // sleep
@@ -64,8 +64,8 @@ int init_act(void) {
    *pwmctl = pwm_ctrl;             // restore PWM control and enable PWM
 }
 
-int act_open(struct inode *inode, struct file *filp){
-   printk(KERN_ALERT "act driver open!!\n");
+int motor_open(struct inode *inode, struct file *filp){
+   printk(KERN_ALERT "motor driver open!!\n");
    
    gpio_base = ioremap(GPIO_BASE_ADDR, 0x60);
    gpsel1=(volatile unsigned int *)(gpio_base+GPFSEL1);
@@ -85,19 +85,19 @@ int act_open(struct inode *inode, struct file *filp){
    *pwmrng1 = 3072;            //RANGE      3072
    *pwmdat1 = 0;
    
-   init_act();
+   init_motor();
    return 0;
 }
 
-int act_release(struct inode *inode, struct file *filp){
-   printk(KERN_ALERT "act driver close!!\n");
+int motor_release(struct inode *inode, struct file *filp){
+   printk(KERN_ALERT "motor driver close!!\n");
    iounmap((void*)gpio_base);
    iounmap((void*)clk);
    iounmap((void*)pwm);
    return 0;
 }
 
-long act_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
+long motor_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 {
    unsigned int kbuf = 0;
  
@@ -123,29 +123,29 @@ long act_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
    return 0;
 }
 
-static struct file_operations act_fops = {
+static struct file_operations motor_fops = {
    .owner = THIS_MODULE,
-   .open = act_open,
-   .release = act_release,
-   .unlocked_ioctl = act_ioctl,
+   .open = motor_open,
+   .release = motor_release,
+   .unlocked_ioctl = motor_ioctl,
 };
    
-int __init act_init(void){
-   if(register_chrdev(ACT_MAJOR_NUMBER, ACT_DEV_NAME, &act_fops) < 0)
-      printk(KERN_ALERT "act driver initialization fail\n");
+int __init motor_init(void){
+   if(register_chrdev(MOTOR_MAJOR_NUMBER, MOTOR_DEV_NAME, &motor_fops) < 0)
+      printk(KERN_ALERT "motor driver initialization fail\n");
    else
-      printk(KERN_ALERT "act driver initialization success\n");
+      printk(KERN_ALERT "motor driver initialization success\n");
    
    return 0;
 }
 
-void __exit act_exit(void){
-   unregister_chrdev(ACT_MAJOR_NUMBER, ACT_DEV_NAME);
-   printk(KERN_ALERT "act driver exit done\n");
+void __exit motor_exit(void){
+   unregister_chrdev(MOTOR_MAJOR_NUMBER, MOTOR_DEV_NAME);
+   printk(KERN_ALERT "motor driver exit done\n");
 }
 
-module_init(act_init);
-module_exit(act_exit);
+module_init(motor_init);
+module_exit(motor_exit);
 
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("You seong min");

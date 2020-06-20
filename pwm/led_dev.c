@@ -11,9 +11,9 @@
 #include <asm/uaccess.h>
 #include <asm/delay.h>
 
-#define TT_MAJOR_NUMBER 504
-#define TT_MINOR_NUMBER 100
-#define TT_DEV_NAME   "led_pwm1"
+#define LED_MAJOR_NUMBER 504
+#define LED_MINOR_NUMBER 100
+#define LED_DEV_NAME   "led_dev"
 
 #define GPIO_BASE_ADDR 0x3F200000
 #define GPFSEL1 0X04
@@ -48,7 +48,7 @@ volatile unsigned int *pwmdat1;
 #define IOCTL_CMD_SET_BRIGHTNESS _IOWR(IOCTL_MAGIC_NUMBER, 0, int)
 #define IOCTL_CMD_READ_BRIGHTNESS _IOWR(IOCTL_MAGIC_NUMBER, 1, int)
 
-int init_pwm(void);
+int init_led(void);
 
 int led_open(struct inode *inode, struct file *filp){
    printk(KERN_ALERT "LED driver open!!\n");
@@ -64,12 +64,12 @@ int led_open(struct inode *inode, struct file *filp){
    pwmrng1 = (volatile unsigned int*)(pwm+PWM_RNG1);
    pwmdat1 = (volatile unsigned int*)(pwm+PWM_DAT1);
    
-   init_pwm();
+   init_led();
 
    return 0;
 }
 
-int init_pwm(void) {
+int init_led(void) {
    int pwm_ctrl = *pwmctl;
    *pwmctl = 0; // store PWM control and stop PWM
    msleep(10);//
@@ -128,7 +128,7 @@ static struct file_operations led_fops = {
 };
    
 int __init led_init(void){
-   if(register_chrdev(TT_MAJOR_NUMBER, TT_DEV_NAME, &led_fops) < 0)
+   if(register_chrdev(LED_MAJOR_NUMBER, LED_DEV_NAME, &led_fops) < 0)
       printk(KERN_ALERT "LED driver initialization fail\n");
    else
       printk(KERN_ALERT "LED driver initialization success\n");
@@ -137,7 +137,7 @@ int __init led_init(void){
 }
 
 void __exit led_exit(void){
-   unregister_chrdev(TT_MAJOR_NUMBER, TT_DEV_NAME);
+   unregister_chrdev(LED_MAJOR_NUMBER, LED_DEV_NAME);
    printk(KERN_ALERT "LED driver exit done\n");
 }
 
