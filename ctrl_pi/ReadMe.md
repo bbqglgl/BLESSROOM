@@ -5,9 +5,6 @@ $ sudo ./ctrl
 ```
 
 # theory
-GPIO 12 ALT0
-GPIO 18 ALT0
-
 1. pin설정
 + alternate function은 핀의 고유기능을 지정
 + PWM은 두 개의 채널이 있다. 0, 1
