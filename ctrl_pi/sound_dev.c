@@ -36,7 +36,7 @@ int sound_open(struct inode *inode, struct file *filp){
 	gpsel1 = (volatile unsigned int *)(gpio_base + GPFSEL1);
 	gpset1 = (volatile unsigned int *)(gpio_base + GPSET0);
 	gpclr1 = (volatile unsigned int *)(gpio_base + GPCLR0);
-	*gpsel1 |= (1<<18);
+	*gpsel1 |= (1<<18); // 16pin output mode
 	return 0;
 }
 
@@ -49,10 +49,10 @@ long sound_ioctl(struct file *filp, unsigned int cmd, unsigned long arg){
 	switch(cmd)
     {
 		case IOCTL_CMD_SET_SOUND_ON:
-			*gpset1 |= (1<<16);
+			*gpset1 |= (1<<16); // out 1
 			break;
 		case IOCTL_CMD_SET_SOUND_OFF:
-			*gpclr1 |= (1<<16);
+			*gpclr1 |= (1<<16); // out 0
 			break;
 		}
 		return 0;
