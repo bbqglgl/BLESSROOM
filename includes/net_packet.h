@@ -14,7 +14,11 @@ struct net_options
 
 struct ssensor_value
 {
-    int t;
+    int humi;
+    int temp;
+    int gas;
+    int sound;
+    int light;
 };
 
 struct scontrol_value

@@ -9,7 +9,7 @@ int main(int argc, char* argv[])
     pthread_t pthread;
 
     //loopback
-    char* ip = "127.0.0.1";
+    char* ip = "192.168.0.8";
 
     //return value
     int rtnval;
@@ -26,13 +26,20 @@ int main(int argc, char* argv[])
     if(rtnval > 0)
     {
         printf("pthread error!\n");
-        return -1;
+        return -1;  
     }
 
     sensor_value.t = 0;
     while(1)
     {
         sensor_value.t ++;
+        sensor_value.gas++;
+        sensor_value.sound++;
+        sensor_value.light++;
+    
+        printf("%d\n",sensor_value.gas);
+        printf("%d\n",sensor_value.sound);
+        printf("%d\n",sensor_value.light);
         sleep(1);
     }
     return 0;

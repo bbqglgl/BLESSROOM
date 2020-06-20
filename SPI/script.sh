@@ -1,11 +1,11 @@
 sudo rmmod light_dev
 sudo rmmod sound_dev
 sudo rmmod gas_dev
-make clean
-make
+sudo make clean
+sudo make
 sudo insmod light_dev.ko
 sudo insmod sound_dev.ko
 sudo insmod gas_dev.ko
-rm app
-gcc -o app app.c
+sudo rm app
+sudo make app
 sudo ./app
