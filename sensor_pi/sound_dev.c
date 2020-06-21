@@ -221,7 +221,7 @@ module_init(sound_init);
 module_exit(sound_exit);
 
 MODULE_LICENSE("GPL");
-MODULE_AUTHOR("Jiwoong");
+MODULE_AUTHOR("YoonHaeng");
 MODULE_DESCRIPTION("des");
 
    
