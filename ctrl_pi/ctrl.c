@@ -124,12 +124,10 @@ int main(void)
       // windows control motor
       ioctl(motor, IOCTL_CMD_SET_ANGLE, &control_value.window);
 	/***********************************************************************************************************************
-        * sound control 50ms => 1s extend
+        * sound control motor period is 20ms
 	* original
-	* 77 : 3072 = x ms : 20 ms
-	* input = 77
+	* input : 3072 = x ms : 20 ms 
 	* x = (input * 20) / 3072
-	* x 는 시간
 	**************************************************************************************************************************/ 
       duty_cycle = control_value.sound * 20 / 3072;
       usleep(1000);
