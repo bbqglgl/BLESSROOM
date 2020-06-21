@@ -57,7 +57,7 @@ int init_motor(void) {
    *clkctl = BCM_PASSWORD | (0x01 << 5); // stop PWM Clock
    msleep(10);                  //sleep
    
-   int idiv = (int)(19200000.0f / 153600.0f); // Oscilloscope to 16kHz
+   int idiv = (int)(19200000.0f / 153600.0f); // Oscilloscope to 153600Hz
    *clkdiv = BCM_PASSWORD | (idiv << 12); // integer part of divisior register
    *clkctl = BCM_PASSWORD | (0x11); //set source to oscilloscope & enable PWM CLK
 
