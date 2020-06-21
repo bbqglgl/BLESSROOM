@@ -133,7 +133,7 @@ int main(void)
 	* x = input / 10
 	**************************************************************************************************************************/ 
       control_value.sound >=5 && control_value.sound <= 25 ? need_mic_ctrl = 1 : 0; 
-      if(need_mic_ctrl) duty_cycle = control_value.sound / 10;
+      if(need_mic_ctrl) duty_cycle = (float)(control_value.sound / 10);
       usleep(1000);
       // led control
       printf(" off brightness : 0,  maximum brightness : 1024) ");
