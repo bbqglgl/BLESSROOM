@@ -45,13 +45,14 @@ float duty_cycle = 0.5; // duty cycle initialize -90 degree : 0.5ms
 
 void *make_pwm(int sound)
 {
-	while(1){
+      while(1){
       ioctl(sound, IOCTL_CMD_SET_SOUND_ON);
       usleep(duty_cycle*1000); // duty cycle
       ioctl(sound, IOCTL_CMD_SET_SOUND_OFF);
       usleep((20.0-duty_cycle)*1000);// idle time
-   }
-	return 0;
+      usleep(20000);
+      }
+      return 0;
 }
 
 
@@ -62,7 +63,8 @@ int main(void)
    pthread_t pthread;
    int current_angle = 0, current_brightness = 0;
    int i = 0;
-
+   int loop = 0;
+   int need_mic_ctrl = 0;
    //you have to set values in 'opt' for networking
     struct net_options opt;
     //when you want to run a server, set serverIP to NULL
@@ -122,14 +124,16 @@ int main(void)
       printf("if input = 77 then set -90 degree\nif input = 230 then set 0 degree\n \
       if input = 384 then set 90 degree");
       // windows control motor
-      ioctl(motor, IOCTL_CMD_SET_ANGLE, &control_value.window);
+      ioctl(motor, IOCTL_CMD_SET_ANGLE, &control_value.window);*/
 	/***********************************************************************************************************************
         * sound control motor period is 20ms
 	* original
-	* input : 3072 = x ms : 20 ms 
-	* x = (input * 20) / 3072
+	* input : 200 = x ms : 20 ms
+	* range 0 ~ 200
+	* x = input / 10
 	**************************************************************************************************************************/ 
-      duty_cycle = control_value.sound * 20 / 3072;
+      control_value.sound >=5 && control_value.sound <= 25 ? need_mic_ctrl = 1 : 0; 
+      if(need_mic_ctrl) duty_cycle = control_value.sound / 10;
       usleep(1000);
       // led control
       printf(" off brightness : 0,  maximum brightness : 1024) ");
@@ -150,6 +154,7 @@ int main(void)
 				usleep(1000);
 			}
 		}
+		*/
    }
    
    close(motor);
