@@ -49,7 +49,7 @@ void *make_pwm(int sound)
       ioctl(sound, IOCTL_CMD_SET_SOUND_ON);
       usleep(duty_cycle*1000); // duty cycle
       ioctl(sound, IOCTL_CMD_SET_SOUND_OFF);
-      usleep((50.0-duty_cycle)*1000);// idle time
+      usleep((20.0-duty_cycle)*1000);// idle time
    }
 	return 0;
 }
