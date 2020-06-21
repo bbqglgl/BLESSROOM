@@ -222,7 +222,7 @@ module_init(light_init);
 module_exit(light_exit);
 
 MODULE_LICENSE("GPL");
-MODULE_AUTHOR("Jiwoong");
+MODULE_AUTHOR("YoonHaeng");
 MODULE_DESCRIPTION("des");
 
    
