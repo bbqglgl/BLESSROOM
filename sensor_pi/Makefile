@@ -11,4 +11,4 @@ clean:
 	make -C $(KERNEL_DIR) M=$(PWD) clean
 
 app:
-	gcc -o app app.c -L../libs -lmynet -W -Wall -pthread
+	gcc -o app app.c -L../libs -lmynet -W -Wall -pthread -lm

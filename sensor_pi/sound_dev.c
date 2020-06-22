@@ -176,10 +176,12 @@ long sound_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
       case SOUND_GET:
          for(i = 0; i < 10; i++)
          {
-            res += get_value();  
+
+            res += get_value();
+                        
             msleep(10);
          }
-         res /= 10;
+         res /= 2;
          //kbuf = get_value();
          msleep(10);
          printk("%d\n",res);

@@ -3,6 +3,7 @@
 #include <unistd.h>
 #include <sys/ioctl.h>
 #include <stdlib.h>
+#include <math.h>
 #include <string.h>
 
 #include <pthread.h>
@@ -55,6 +56,21 @@
 #define IOCTL_MAGIC_NUMBER_T 't'
 #define TEMP_SET _IOWR(IOCTL_MAGIC_NUMBER_T, 0, int)
 
+#define RLOAD 10.0
+// Calibration resistance at atmospheric CO2 level
+#define RZERO 92.23
+// Parameters for calculating ppm of CO2 from sensor resistance
+#define PARA 148.6020682
+#define PARB 3.169034857
+
+// Parameters to model temperature and humidity dependence
+#define CORA 0.00035
+#define CORB 0.02718
+#define CORC 1.39538
+#define CORD 0.0018
+
+// Atmospheric CO2 level for calibration purposes
+#define ATMOCO2 415.16
 
 #define TEMP_THRESHOLD 10
 #define MOIST_THRESHOLD 20
@@ -92,8 +108,8 @@ int main(void){
 	
 	
     //loopback
-    char* ip = "192.168.0.8";
-
+    char* ip = "192.168.100.5";
+	float rr = 0;
     //return value
     int rtnval;
 
@@ -138,7 +154,10 @@ int main(void){
 		ioctl(fd_g,GAS_GET,&res_g);
 		
 		ioctl(fd_t, TEMP_SET, &q);
-		
+		rr = ((1023./res_g)*5 - 1)*RLOAD;
+		//rr = rr * pow((ATMOCO2/PARA), (1./PARB));
+		rr =  PARA * pow((rr/RZERO), -PARB);
+		res_g = (int)rr;
 		tmp1[0] = ((0xff00&q)>>8); // humi
 		tmp1[1] = (0xff&q); // temp
 		tmp_i[0] = (tmp1[0] - (tmp1[0]%10))/10; //huminity 10 digit
