@@ -21,9 +21,9 @@
 #define GPCLR0 0x28
 #define GPLEV0 0x34
 
-#define IOCTL_MAGIC_NUMBER	'j'
-#define IOCTL_CMD_SET_SOUND_ON		_IOWR(IOCTL_MAGIC_NUMBER, 1, int)
-#define IOCTL_CMD_SET_SOUND_OFF		_IOWR(IOCTL_MAGIC_NUMBER, 2, int)
+#define IOCTL_MAGIC_NUMBER_J	'j'
+#define IOCTL_CMD_SET_SOUND_ON		_IOWR(IOCTL_MAGIC_NUMBER_J, 1, int)
+#define IOCTL_CMD_SET_SOUND_OFF		_IOWR(IOCTL_MAGIC_NUMBER_J, 2, int)
 
 static void __iomem *gpio_base;
 volatile unsigned int *gpsel1;

@@ -46,9 +46,9 @@ static void __iomem *clk;
 volatile unsigned int *clkdiv;
 volatile unsigned int *clkctl;
 
-#define IOCTL_MAGIC_NUMBER_P 's'
-#define IOCTL_CMD_SET_ANGLE _IOWR(IOCTL_MAGIC_NUMBER_P, 0, int)
-#define IOCTL_CMD_READ_ANGLE _IOWR(IOCTL_MAGIC_NUMBER_P,1,int)
+#define IOCTL_MAGIC_NUMBER_S 's'
+#define IOCTL_CMD_SET_ANGLE _IOWR(IOCTL_MAGIC_NUMBER_S, 0, int)
+#define IOCTL_CMD_READ_ANGLE _IOWR(IOCTL_MAGIC_NUMBER_S,1,int)
 
 int init_motor(void) {
    int pwm_ctrl = *pwmctl;
@@ -149,4 +149,4 @@ module_exit(motor_exit);
 
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("You seong min");
-MODULE_DESCRIPTION("des");
+MODULE_DESCRIPTION("motor");

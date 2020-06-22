@@ -44,9 +44,9 @@ volatile unsigned int *pwmctl;
 volatile unsigned int *pwmrng1;
 volatile unsigned int *pwmdat1;
 
-#define IOCTL_MAGIC_NUMBER 'p'
-#define IOCTL_CMD_SET_BRIGHTNESS _IOWR(IOCTL_MAGIC_NUMBER, 0, int)
-#define IOCTL_CMD_READ_BRIGHTNESS _IOWR(IOCTL_MAGIC_NUMBER, 1, int)
+#define IOCTL_MAGIC_NUMBER_P 'p'
+#define IOCTL_CMD_SET_BRIGHTNESS _IOWR(IOCTL_MAGIC_NUMBER_P, 0, int)
+#define IOCTL_CMD_READ_BRIGHTNESS _IOWR(IOCTL_MAGIC_NUMBER_P, 1, int)
 
 int init_led(void);
 
@@ -146,6 +146,6 @@ module_exit(led_exit);
 
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Yoo seong min");
-MODULE_DESCRIPTION("des");
+MODULE_DESCRIPTION("led");
 
    

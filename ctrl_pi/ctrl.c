@@ -29,17 +29,17 @@
 #define SOUND_MINOR_NUMBER 105
 
 
-#define IOCTL_MAGIC_NUMBER_P 's'
-#define IOCTL_CMD_SET_ANGLE _IOWR(IOCTL_MAGIC_NUMBER_P, 0, int)
-#define IOCTL_CMD_READ_ANGLE _IOWR(IOCTL_MAGIC_NUMBER_P,1,int)
+#define IOCTL_MAGIC_NUMBER_S 's'
+#define IOCTL_CMD_SET_ANGLE _IOWR(IOCTL_MAGIC_NUMBER_S, 0, int)
+#define IOCTL_CMD_READ_ANGLE _IOWR(IOCTL_MAGIC_NUMBER_S,1,int)
 
-#define IOCTL_MAGIC_NUMBER	'p'
-#define IOCTL_CMD_SET_BRIGHTNESS _IOWR(IOCTL_MAGIC_NUMBER, 0, int)
-#define IOCTL_CMD_READ_BRIGHTNESS _IOWR(IOCTL_MAGIC_NUMBER, 1, int)
+#define IOCTL_MAGIC_NUMBER_P	'p'
+#define IOCTL_CMD_SET_BRIGHTNESS _IOWR(IOCTL_MAGIC_NUMBER_P, 0, int)
+#define IOCTL_CMD_READ_BRIGHTNESS _IOWR(IOCTL_MAGIC_NUMBER_P, 1, int)
 
-#define IOCTL_MAGIC_NUMBER	'j'
-#define IOCTL_CMD_SET_SOUND_ON		_IOWR(IOCTL_MAGIC_NUMBER, 1, int)
-#define IOCTL_CMD_SET_SOUND_OFF		_IOWR(IOCTL_MAGIC_NUMBER, 2, int)
+#define IOCTL_MAGIC_NUMBER_J	'j'
+#define IOCTL_CMD_SET_SOUND_ON		_IOWR(IOCTL_MAGIC_NUMBER_J, 1, int)
+#define IOCTL_CMD_SET_SOUND_OFF		_IOWR(IOCTL_MAGIC_NUMBER_J, 2, int)
 
 float duty_cycle = 0.5; // duty cycle initialize -90 degree : 0.5ms
 
@@ -50,7 +50,6 @@ void *make_pwm(int sound)
       usleep(duty_cycle*1000); // duty cycle
       ioctl(sound, IOCTL_CMD_SET_SOUND_OFF);
       usleep((20.0-duty_cycle)*1000);// idle time
-      usleep(20000);
       }
       return 0;
 }
@@ -63,7 +62,6 @@ int main(void)
    pthread_t pthread;
    int current_angle = 0, current_brightness = 0;
    int i = 0;
-   int loop = 0;
    int need_mic_ctrl = 0;
    //you have to set values in 'opt' for networking
     struct net_options opt;
@@ -124,7 +122,7 @@ int main(void)
       printf("if input = 77 then set -90 degree\nif input = 230 then set 0 degree\n \
       if input = 384 then set 90 degree");
       // windows control motor
-      ioctl(motor, IOCTL_CMD_SET_ANGLE, &control_value.window);*/
+      ioctl(motor, IOCTL_CMD_SET_ANGLE, &control_value.window);
 	/***********************************************************************************************************************
         * sound control motor period is 20ms
 	* original
@@ -133,7 +131,14 @@ int main(void)
 	* x = input / 10
 	**************************************************************************************************************************/ 
       control_value.sound >=5 && control_value.sound <= 25 ? need_mic_ctrl = 1 : 0; 
-      if(need_mic_ctrl) duty_cycle = (float)(control_value.sound / 10);
+      if(need_mic_ctrl){
+	 if(control_value.sound >=5 && control_value.sound <10) control_value.sound = 5;
+	 else if(control_value.sound >=10 && control_value.sound <15) control_value.sound = 10;
+	 else if(control_value.sound >=15 && control_value.sound <20) control_value.sound = 15;
+	 else if(control_value.sound >=20 && control_value.sound <25) control_value.sound = 20;
+	 else if(control_value.sound == 25) control_value.sound = 25;
+	 duty_cycle = (float)(control_value.sound / 10);
+      }
       usleep(1000);
       // led control
       printf(" off brightness : 0,  maximum brightness : 1024) ");
@@ -154,7 +159,6 @@ int main(void)
 				usleep(1000);
 			}
 		}
-		*/
    }
    
    close(motor);
