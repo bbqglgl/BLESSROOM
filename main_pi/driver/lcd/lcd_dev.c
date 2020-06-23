@@ -39,8 +39,7 @@ unsigned char string[LCD_LINE][STRING_LEN_MAX];
 
 #define IOCTL_MAGIC_NUMBER 'i'
 #define IOCTL_CMD_LCD_INIT _IOWR(IOCTL_MAGIC_NUMBER, 0, int)
-#define IOCTL_CMD_LCD_TEST _IOWR(IOCTL_MAGIC_NUMBER, 1, int)
-#define IOCTL_CMD_LCD_SET_STRING _IOWR(IOCTL_MAGIC_NUMBER, 2, struct str_info)
+#define IOCTL_CMD_LCD_SET_STRING _IOWR(IOCTL_MAGIC_NUMBER, 1, struct str_info)
 
 int lcd_open(struct inode *inode, struct file *filp){
    printk(KERN_ALERT "LCD driver open!!\n");
@@ -90,9 +89,7 @@ void lcd_to_i2c(unsigned char byte)
    byte = byte & 0xf3;  //drop 2(enable signal) and 3(gap) bit
 
    //write_i2c(byte & 0x0f);
-   byte |= 0b1100;
-
-   //byte |= (1<<2);      //lcd enable signal
+   byte |= 0b1100;      //lcd enable signal
    write_i2c(byte);
 
    byte &= ~(1<<2);      //lcd disable signal
@@ -106,7 +103,7 @@ void set_couser(unsigned char line, unsigned char loc)
    unsigned char t = 0b1000;
    loc &= 0x0f;
 
-   if(line > 1)
+   if(line >= 1)
       t |= 0b0100;
    
    printk(KERN_ALERT "%x %x\n", t << 4, loc << 4);
@@ -115,24 +112,26 @@ void set_couser(unsigned char line, unsigned char loc)
    lcd_to_i2c(loc << 4);
 }
 
-
 void write_lcd_char(unsigned char byte)
 {
    lcd_to_i2c( (byte&0xf0)       | 0x01);
    lcd_to_i2c( ((byte&0x0f)<<4)  | 0x01);
 }
+
 void write_lcd_string(unsigned char line, unsigned char offset)
 {
    int i;
 
    set_couser(line - 1, 0);
+
    for(i=0 ; i < 16 ; i++)
    {
       if(string[line][i + offset] < ' ')
          break;
       write_lcd_char(string[line][i + offset]);
    }
-   for(; i < 16 ; i++)
+
+   for(; i < 16 ; i++)  //fill blanks in display
       write_lcd_char(' ');
 }
 
@@ -180,29 +179,18 @@ long lcd_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
    switch(cmd) {
       
       case IOCTL_CMD_LCD_INIT:
-         //copy_from_user(&kbuf, (const void*)arg, 4);
          init_lcd();
          return 1;
-         break;
-
-      case IOCTL_CMD_LCD_TEST:
-         //copy_to_user((const void*)arg,&kbuf,4);
-         write_lcd_char('A');
-         write_lcd_char('B');
-         write_lcd_char('C');
-         write_lcd_char('D');
-         write_lcd_char('E');
-         return 2;
          break;
       case IOCTL_CMD_LCD_SET_STRING:
          copy_from_user(&t, (const void*)arg, sizeof(struct str_info));
          memcpy(string[t.line], t.string, sizeof(t.string));
          write_lcd_string(t.line, 0);
-         return 3;
+         return 2;
          break;
    }
 
-   return 1800;
+   return 0;
 }
 
 static struct file_operations lcd_fops = {
