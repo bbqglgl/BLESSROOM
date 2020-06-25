@@ -47,9 +47,9 @@ void *make_pwm(int sound)
 {
       while(1){
       ioctl(sound, IOCTL_CMD_SET_SOUND_ON);
-      usleep(duty_cycle*1000); // duty cycle
+      usleep(duty_cycle*1000.0); // duty cycle
       ioctl(sound, IOCTL_CMD_SET_SOUND_OFF);
-      usleep((20.0-duty_cycle)*1000);// idle time
+      usleep((20.0-duty_cycle)*1000.0);// idle time
       }
       return 0;
 }
@@ -132,12 +132,8 @@ int main(void)
 	**************************************************************************************************************************/ 
       control_value.sound >=5 && control_value.sound <= 25 ? need_mic_ctrl = 1 : 0; 
       if(need_mic_ctrl){
-	 if(control_value.sound >=5 && control_value.sound <10) control_value.sound = 5;
-	 else if(control_value.sound >=10 && control_value.sound <15) control_value.sound = 10;
-	 else if(control_value.sound >=15 && control_value.sound <20) control_value.sound = 15;
-	 else if(control_value.sound >=20 && control_value.sound <25) control_value.sound = 20;
-	 else if(control_value.sound == 25) control_value.sound = 25;
-	 duty_cycle = (float)(control_value.sound / 10);
+	 duty_cycle = (float)(control_value.sound / 10.0);
+	 //make_pwm(sound);
       }
       usleep(1000);
       // led control
