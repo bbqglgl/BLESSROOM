@@ -139,7 +139,7 @@ void get_weather_info()
 int net_init()
 {
     int rtnval;
-    opt_client.serverIP = "192.168.100.3";
+    opt_client.serverIP = "192.168.100.5";
     opt_client.isMain = 0;
     
     opt_server.serverIP = NULL;
@@ -266,15 +266,15 @@ void control_sound()
 {
     if(timer % DELAY_SOUND != 0)
         return;
-    if(sensor_value.sound < 10)
+    if(sensor_value.sound < 30)
 	    return;
-    if(sensor_value.sound <=100)
+    if(sensor_value.sound <=120)
     {
 	    if(control_value.sound >= 25)
 		    return;
 	    control_value.sound ++;
     }
-    else if(sensor_value.sound > 600)
+    else if(sensor_value.sound > 400)
     {
 	    if(control_value.sound <= 5)
 		    return;
