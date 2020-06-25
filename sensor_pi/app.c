@@ -58,10 +58,10 @@
 
 #define RLOAD 10.0
 // Calibration resistance at atmospheric CO2 level
-#define RZERO 92.23
+#define RZERO 56.81162928
 // Parameters for calculating ppm of CO2 from sensor resistance
-#define PARA 148.6020682
-#define PARB 3.169034857
+#define PARA 116.6020682
+#define PARB 2.769034857
 
 // Parameters to model temperature and humidity dependence
 #define CORA 0.00035
@@ -102,13 +102,13 @@ int main(void){
 	int res_l;
 	int res_s;
 	int res_g;
-	
+	float voltage;
 	int val;
 	int val2;
-	
+	float rs;
 	
     //loopback
-    char* ip = "192.168.100.5";
+    char* ip = "192.168.100.4";
 	float rr = 0;
     //return value
     int rtnval;
@@ -154,10 +154,14 @@ int main(void){
 		ioctl(fd_g,GAS_GET,&res_g);
 		
 		ioctl(fd_t, TEMP_SET, &q);
-		rr = ((1023./res_g)*5 - 1)*RLOAD;
+		printf("%d\n",res_g);
+		voltage = ((float)res_g /(float)1023.0)*5.0;
+		rs = (5.0-voltage)/voltage * 100;
+		rr = PARA * powf((rs/RZERO),-PARB);
+		//rr = ((1023./res_g)*5 - 1)*RLOAD;
 		//rr = rr * pow((ATMOCO2/PARA), (1./PARB));
-		rr =  PARA * pow((rr/RZERO), -PARB);
-		res_g = (int)rr;
+		//rr =  PARA * pow((rr/RZERO), -PARB);
+		res_g = rr;
 		tmp1[0] = ((0xff00&q)>>8); // humi
 		tmp1[1] = (0xff&q); // temp
 		tmp_i[0] = (tmp1[0] - (tmp1[0]%10))/10; //huminity 10 digit
